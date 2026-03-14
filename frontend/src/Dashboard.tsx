@@ -12,34 +12,8 @@ const navItems = [
   { icon: '⚙', label: 'Settings',   badge: ''  },
 ];
 
-const stats = [
-  { icon: '◎', label: 'Total Events',  value: '24',     change: '+12%', up: true,  iconBg: 'rgba(79,141,255,0.12)',  iconColor: '#4f8dff' },
-  { icon: '⬢', label: 'Attendees',     value: '3,847',  change: '+8%',  up: true,  iconBg: 'rgba(167,139,250,0.12)', iconColor: '#a78bfa' },
-  { icon: '✦', label: 'Revenue',       value: '$48.2K', change: '+23%', up: true,  iconBg: 'rgba(52,212,184,0.12)',  iconColor: '#34d4b8' },
-  { icon: '⭐', label: 'Satisfaction',  value: '4.8/5',  change: '+2%',  up: true,  iconBg: 'rgba(245,158,11,0.12)',  iconColor: '#f59e0b' },
-];
-
-const events = [
-  { name: 'AI Innovation Summit 2026',   type: 'Conference',   date: 'Mar 22, 2026', venue: 'Tech Center, SF',       attendees: 842,  status: 'live' },
-  { name: 'ML Workshop — Transformers',  type: 'Workshop',     date: 'Mar 28, 2026', venue: 'Virtual',               attendees: 320,  status: 'upcoming' },
-  { name: 'Design Systems Meetup',       type: 'Meetup',       date: 'Apr 3, 2026',  venue: 'Innovation Hub, NYC',    attendees: 175,  status: 'upcoming' },
-  { name: 'Cloud Ops Bootcamp',          type: 'Bootcamp',     date: 'Apr 10, 2026', venue: 'AWS Campus, Seattle',    attendees: 560,  status: 'draft' },
-  { name: 'Product Launch — Q1 Review',  type: 'Internal',     date: 'Mar 10, 2026', venue: 'HQ, Room 301',          attendees: 48,   status: 'completed' },
-];
-
-const activities = [
-  { icon: '🎟', text: '<strong>42 new registrations</strong> for AI Innovation Summit', time: '2 min ago',   bg: 'rgba(79,141,255,0.1)',  color: '#4f8dff' },
-  { icon: '💬', text: '<strong>Speaker confirmed:</strong> Dr. Sarah Chen accepted the keynote slot', time: '18 min ago',  bg: 'rgba(167,139,250,0.1)', color: '#a78bfa' },
-  { icon: '📊', text: '<strong>Analytics report</strong> for ML Workshop is ready to view', time: '1 hr ago',   bg: 'rgba(52,212,184,0.1)',  color: '#34d4b8' },
-  { icon: '⚡', text: '<strong>AI recommendation:</strong> Move Panel B to 2PM — conflict detected', time: '2 hr ago',   bg: 'rgba(245,158,11,0.1)', color: '#f59e0b' },
-  { icon: '✅', text: '<strong>Cloud Ops Bootcamp</strong> draft saved with 4 sessions', time: '3 hr ago',   bg: 'rgba(79,141,255,0.1)',  color: '#4f8dff' },
-];
-
-const quickActions = [
-  { icon: '✦', title: 'Create Event',    desc: 'Launch a new event from scratch or template', iconBg: 'rgba(79,141,255,0.12)',  iconColor: '#4f8dff' },
-  { icon: '🎤', title: 'Invite Speakers', desc: 'Send AI-personalized speaker invitations',    iconBg: 'rgba(167,139,250,0.12)', iconColor: '#a78bfa' },
-  { icon: '📈', title: 'View Reports',    desc: 'Engagement, satisfaction & revenue analytics', iconBg: 'rgba(52,212,184,0.12)',  iconColor: '#34d4b8' },
-  { icon: '◈', title: 'AI Assistant',     desc: 'Chat with AI to plan your next event',        iconBg: 'rgba(245,158,11,0.12)',  iconColor: '#f59e0b' },
+const initialMessages = [
+  { role: 'ai', text: 'Good evening, Siddharth! I am EventMind AI. How can I assist you with planning and managing your upcoming events today?' }
 ];
 
 /* ── COMPONENT ───────────────────────────────────────── */
@@ -47,6 +21,25 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [activeNav, setActiveNav] = useState('Dashboard');
+  const [messages, setMessages] = useState(initialMessages);
+  const [inputValue, setInputValue] = useState('');
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue.trim()) return;
+
+    const userMsg = { role: 'user', text: inputValue };
+    setMessages([...messages, userMsg]);
+    setInputValue('');
+
+    // Simulate AI response
+    setTimeout(() => {
+      setMessages(prev => [...prev, { 
+        role: 'ai', 
+        text: 'I can certainly help you with that! This is a demo response from EventMind AI.' 
+      }]);
+    }, 1000);
+  };
 
   return (
     <div className={`dash${collapsed ? ' sidebar-collapsed' : ''}`}>
@@ -64,7 +57,7 @@ export default function Dashboard() {
             </button>
           )}
           {collapsed && (
-            <button className="dash-sidebar-toggle" onClick={() => setCollapsed(false)} title="Expand" style={{ marginLeft: -4 }}>
+            <button className="dash-sidebar-toggle" onClick={() => setCollapsed(false)} title="Expand">
               ▷
             </button>
           )}
@@ -124,107 +117,34 @@ export default function Dashboard() {
 
         {/* CONTENT */}
         <div className="dash-content">
-
-          {/* STATS */}
-          <div className="dash-stats">
-            {stats.map((s, i) => (
-              <div className="dash-stat-card" key={i}>
-                <div className="dash-stat-header">
-                  <div className="dash-stat-icon" style={{ background: s.iconBg, color: s.iconColor }}>
-                    {s.icon}
+          <div className="dash-chat-container">
+            <div className="dash-chat-messages">
+              {messages.map((msg, i) => (
+                <div key={i} className={`dash-message ${msg.role}`}>
+                  <div className="dash-message-avatar">
+                    {msg.role === 'ai' ? '◈' : 'SK'}
                   </div>
-                  <span className={`dash-stat-change ${s.up ? 'up' : 'down'}`}>
-                    {s.up ? '↑' : '↓'} {s.change}
-                  </span>
+                  <div className="dash-message-content">
+                    {msg.text}
+                  </div>
                 </div>
-                <div className="dash-stat-value">{s.value}</div>
-                <div className="dash-stat-label">{s.label}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* EVENTS TABLE */}
-          <div className="dash-section">
-            <div className="dash-section-header">
-              <div className="dash-section-title">Upcoming Events</div>
-              <button className="dash-section-action">View all →</button>
-            </div>
-            <div className="dash-table-wrap">
-              <table className="dash-table">
-                <thead>
-                  <tr>
-                    <th>Event</th>
-                    <th>Date</th>
-                    <th>Venue</th>
-                    <th>Attendees</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {events.map((ev, i) => (
-                    <tr key={i}>
-                      <td>
-                        <div className="dash-event-name">{ev.name}</div>
-                        <div className="dash-event-sub">{ev.type}</div>
-                      </td>
-                      <td>{ev.date}</td>
-                      <td style={{ color: 'var(--muted)' }}>{ev.venue}</td>
-                      <td>{ev.attendees.toLocaleString()}</td>
-                      <td>
-                        <span className={`dash-status ${ev.status}`}>
-                          {ev.status === 'live' && '● '}
-                          {ev.status.charAt(0).toUpperCase() + ev.status.slice(1)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* BOTTOM GRID */}
-          <div className="dash-bottom-grid">
-
-            {/* ACTIVITY FEED */}
-            <div className="dash-activity">
-              <div className="dash-section-header">
-                <div className="dash-section-title">Recent Activity</div>
-                <button className="dash-section-action">See all →</button>
-              </div>
-              <div className="dash-activity-list">
-                {activities.map((a, i) => (
-                  <div className="dash-activity-item" key={i}>
-                    <div className="dash-activity-dot" style={{ background: a.bg, color: a.color }}>
-                      {a.icon}
-                    </div>
-                    <div className="dash-activity-text">
-                      <div className="dash-activity-title" dangerouslySetInnerHTML={{ __html: a.text }} />
-                      <div className="dash-activity-time">{a.time}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
 
-            {/* QUICK ACTIONS */}
-            <div className="dash-actions">
-              <div className="dash-section-header">
-                <div className="dash-section-title">Quick Actions</div>
-              </div>
-              <div className="dash-actions-grid">
-                {quickActions.map((q, i) => (
-                  <div className="dash-action-card" key={i}>
-                    <div className="dash-action-icon" style={{ background: q.iconBg, color: q.iconColor }}>
-                      {q.icon}
-                    </div>
-                    <div className="dash-action-title">{q.title}</div>
-                    <div className="dash-action-desc">{q.desc}</div>
-                  </div>
-                ))}
-              </div>
+            <div className="dash-chat-input-area">
+              <form className="dash-chat-input-box" onSubmit={handleSend}>
+                <input 
+                  type="text" 
+                  className="dash-chat-input" 
+                  placeholder="Message EventMind AI..." 
+                  value={inputValue}
+                  onChange={e => setInputValue(e.target.value)}
+                />
+                <button type="submit" className="dash-chat-submit" disabled={!inputValue.trim()}>
+                  ↑
+                </button>
+              </form>
             </div>
-
           </div>
         </div>
       </main>
