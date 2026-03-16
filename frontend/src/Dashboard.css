@@ -454,6 +454,41 @@
   border-color: rgba(79, 141, 255, 0.2);
 }
 
+/* ── TYPING INDICATOR ───────────────────────────────── */
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30%            { transform: translateY(-6px); opacity: 1; }
+}
+.dash-typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 16px 24px !important;
+  min-height: auto;
+}
+.dash-typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: typingBounce 1.4s ease-in-out infinite;
+}
+.dash-typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.dash-typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+/* ── ERROR MESSAGE ──────────────────────────────────── */
+.dash-message.error .dash-message-avatar {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+.dash-message.error .dash-message-content {
+  border-top-left-radius: 4px;
+  background: rgba(248, 113, 113, 0.06);
+  border-color: rgba(248, 113, 113, 0.2);
+  color: #fca5a5;
+}
+
 /* ── CHAT INPUT ──────────────────────────────────────── */
 .dash-chat-input-area {
   position: absolute;

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './Dashboard.css';
 
 /* ── DEMO DATA ───────────────────────────────────────── */
@@ -23,22 +24,36 @@ export default function Dashboard() {
   const [activeNav, setActiveNav] = useState('Dashboard');
   const [messages, setMessages] = useState(initialMessages);
   const [inputValue, setInputValue] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = (e: React.FormEvent) => {
+  // Auto-scroll to latest message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isLoading]);
+
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isLoading) return;
 
     const userMsg = { role: 'user', text: inputValue };
-    setMessages([...messages, userMsg]);
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
     setInputValue('');
+    setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      setMessages(prev => [...prev, { 
-        role: 'ai', 
-        text: 'I can certainly help you with that! This is a demo response from EventMind AI.' 
-      }]);
-    }, 1000);
+    try {
+      const res = await axios.post('/api/chat', { messages: updatedMessages });
+      setMessages(prev => [...prev, { role: 'ai', text: res.data.reply }]);
+    } catch (err: unknown) {
+      let errorText = 'Sorry, I encountered an error. Please try again.';
+      if (axios.isAxiosError(err) && err.response?.data?.error) {
+        errorText = err.response.data.error;
+      }
+      setMessages(prev => [...prev, { role: 'error', text: errorText }]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -122,13 +137,27 @@ export default function Dashboard() {
               {messages.map((msg, i) => (
                 <div key={i} className={`dash-message ${msg.role}`}>
                   <div className="dash-message-avatar">
-                    {msg.role === 'ai' ? '◈' : 'SK'}
+                    {msg.role === 'ai' ? '◈' : msg.role === 'error' ? '⚠' : 'SK'}
                   </div>
                   <div className="dash-message-content">
                     {msg.text}
                   </div>
                 </div>
               ))}
+
+              {/* Typing indicator */}
+              {isLoading && (
+                <div className="dash-message ai">
+                  <div className="dash-message-avatar">◈</div>
+                  <div className="dash-message-content dash-typing-indicator">
+                    <span className="dash-typing-dot"></span>
+                    <span className="dash-typing-dot"></span>
+                    <span className="dash-typing-dot"></span>
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
             </div>
 
             <div className="dash-chat-input-area">
@@ -139,8 +168,9 @@ export default function Dashboard() {
                   placeholder="Message EventMind AI..." 
                   value={inputValue}
                   onChange={e => setInputValue(e.target.value)}
+                  disabled={isLoading}
                 />
-                <button type="submit" className="dash-chat-submit" disabled={!inputValue.trim()}>
+                <button type="submit" className="dash-chat-submit" disabled={!inputValue.trim() || isLoading}>
                   ↑
                 </button>
               </form>
